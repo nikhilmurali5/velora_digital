@@ -207,26 +207,20 @@ router.post('/', async (req, res) => {
     });
 
     /* Admin notification */
-   try {
-  /* Admin email */
-  await transporter.sendMail({
-    from: `"VELORA Website" <${process.env.EMAIL_USER}>`,
-    to: process.env.ADMIN_EMAIL,
-    subject: `New Enquiry from ${name} — VELORA`,
-    html: adminEmail({ name, email, brand, message, submittedAt })
-  });
+    await transporter.sendMail({
+      from:    `"VELORA Website" <${process.env.EMAIL_USER}>`,
+      to:      process.env.ADMIN_EMAIL,
+      subject: `New Enquiry from ${name} — VELORA`,
+      html:    adminEmail({ name, email, brand, message, submittedAt })
+    });
 
-  /* User email */
-  await transporter.sendMail({
-    from: `"VELORA Digital" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: `We received your message, ${name.split(' ')[0]}`,
-    html: autoReplyEmail({ name })
-  });
-
-} catch (emailErr) {
-  console.error("❌ Email failed:", emailErr.message);
-}
+    /* Auto-reply to user */
+    await transporter.sendMail({
+      from:    `"VELORA Digital" <${process.env.EMAIL_USER}>`,
+      to:      email,
+      subject: `We received your message, ${name.split(' ')[0]}`,
+      html:    autoReplyEmail({ name })
+    });
 
     return res.status(200).json({
       success: true,
