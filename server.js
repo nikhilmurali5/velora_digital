@@ -29,7 +29,7 @@ const contactLimiter = rateLimit({
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ── Routes ── */
-app.use('/api/contact', contactLimiter, require('./routes/contact'));
+//app.use('/api/contact', contactLimiter, require('./routes/contact'));
 
 /* ── Health check ── */
 app.get('/health', (_req, res) => {
