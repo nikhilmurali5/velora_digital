@@ -59,7 +59,7 @@ app.get('*', (_req, res) => {
 
 /* ── MongoDB connection ── */
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("Server running");
 });
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
@@ -67,5 +67,5 @@ mongoose.connect(process.env.MONGODB_URI)
   })
   .catch(err => {
   console.error('❌  MongoDB connection failed:', err.message);
-  //app.listen(PORT, () => console.log(`🚀 Server running WITHOUT DB on port ${PORT}`));
+  app.listen(PORT, () => console.log(`🚀 Server running WITHOUT DB on port ${PORT}`));
 });
