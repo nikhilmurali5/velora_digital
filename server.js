@@ -10,7 +10,9 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 /* ── Middleware ── */
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -57,7 +59,7 @@ app.get('*', (_req, res) => {
 
 /* ── MongoDB connection ── */
 app.listen(PORT, () => {
-  console.log("Server running");
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
@@ -65,5 +67,5 @@ mongoose.connect(process.env.MONGODB_URI)
   })
   .catch(err => {
   console.error('❌  MongoDB connection failed:', err.message);
-  app.listen(PORT, () => console.log(`🚀 Server running WITHOUT DB on port ${PORT}`));
+  //app.listen(PORT, () => console.log(`🚀 Server running WITHOUT DB on port ${PORT}`));
 });
