@@ -393,7 +393,7 @@ document.getElementById('fbtn').addEventListener('click', async function () {
   btn.textContent = 'Sending…';
 
   try {
-    const res  = await fetch('/api/contact', {
+    const res  = await fetch('https://velora-digital.onrender.com/api/contact', 
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ name, email, brand, message })
