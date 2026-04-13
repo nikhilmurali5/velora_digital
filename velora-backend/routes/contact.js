@@ -205,7 +205,7 @@ router.post('/', async (req, res) => {
     /* Admin notification */
 await resend.emails.send({
   from: "VELORA <onboarding@resend.dev>",
-  to: process.env.ADMIN_EMAIL,
+  to: "veloradigital07@gmail.com",
   subject: `New Enquiry from ${name} — VELORA`,
   html: adminEmail({ name, email, brand, message, submittedAt })
 });
