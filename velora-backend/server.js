@@ -44,7 +44,7 @@ console.log("🔥 Loading contact route...");
 
 try {
   const contactRoute = require('./routes/contact');
-  app.use('/api/contact', contactLimiter, contactRoute);
+  app.use('/api/contact', contactRoute);
   console.log("✅ Contact route loaded");
 } catch (err) {
   console.error("❌ Route load failed:", err);
