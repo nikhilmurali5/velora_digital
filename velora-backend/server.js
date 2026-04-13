@@ -19,10 +19,16 @@ app.use(express.urlencoded({ extended: true }));
 
 /* ── Rate Limiter: max 5 contact submissions per hour per IP ── */
 const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,   // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
+
+  // 🔥 ADD THIS FIX
+  keyGenerator: (req) => {
+    return req.ip; // ensures proper IP detection behind proxy
+  },
+
   message: {
     success: false,
     message: 'Too many submissions from this IP. Please try again after an hour.'
