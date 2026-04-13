@@ -24,9 +24,9 @@ const contactLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 
-  // 🔥 ADD THIS FIX
-  keyGenerator: (req) => {
-    return req.ip; // ensures proper IP detection behind proxy
+  // 🔥 ADD THIS LINE (CRITICAL FIX)
+  validate: {
+    xForwardedForHeader: false
   },
 
   message: {
