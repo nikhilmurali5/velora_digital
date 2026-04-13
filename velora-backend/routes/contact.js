@@ -203,43 +203,20 @@ router.post('/', async (req, res) => {
 
     /* Admin notification */
     /* Admin notification */
-console.log("STEP 1: Before admin email");
+await resend.emails.send({
+  from: "VELORA <onboarding@resend.dev>",
+  to: to: "veloradigital07@gmail.com",
+  subject: `New Enquiry from ${name} — VELORA`,
+  html: adminEmail({ name, email, brand, message, submittedAt })
+});
 
-// ✅ ADMIN MAIL
-let adminRes;
-try {
-  adminRes = await resend.emails.send({
-    from: "VELORA <onboarding@resend.dev>",
-    to: "nikhilmurali@gmail.com",
-    subject: `New Enquiry from ${name} — VELORA`,
-    html: adminEmail({ name, email, brand, message, submittedAt })
-  });
-
-  console.log("✅ ADMIN SENT:", adminRes);
-
-} catch (err) {
-  console.error("❌ ADMIN ERROR:", err);
-}
-
-console.log("STEP 2: Before user email");
-
-// ✅ USER MAIL
-let userRes;
-try {
-  userRes = await resend.emails.send({
-    from: "VELORA <onboarding@resend.dev>",
-    to: email,
-    subject: `We received your message, ${name.split(' ')[0]}`,
-    html: autoReplyEmail({ name })
-  });
-
-  console.log("✅ USER SENT:", userRes);
-
-} catch (err) {
-  console.error("❌ USER ERROR:", err);
-}
-
-console.log("STEP 3: After both emails");
+/* Auto-reply to user */
+await resend.emails.send({
+  from: "VELORA <onboarding@resend.dev>",
+  to: email,
+  subject: `We received your message, ${name.split(' ')[0]}`,
+  html: autoReplyEmail({ name })
+});
 
     return res.status(200).json({
       success: true,
