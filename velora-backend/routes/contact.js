@@ -2,7 +2,7 @@ const express    = require('express');
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const Contact    = require('../models/Contact');
-console.log("🔥 CONTACT ROUTE HIT");
+
 const router = express.Router();
 
 /* ── Email transporter ── */
@@ -202,6 +202,7 @@ router.post('/', async (req, res) => {
     });
 
     /* Admin notification */
+    console.log("🔥 CONTACT ROUTE HIT");
     /* Admin notification */
 await resend.emails.send({
   from: "VELORA <onboarding@resend.dev>",
