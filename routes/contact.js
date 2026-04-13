@@ -1,17 +1,12 @@
 const express    = require('express');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 const Contact    = require('../models/Contact');
 
 const router = express.Router();
 
 /* ── Email transporter ── */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS   // Gmail App Password (NOT your account password)
-  }
-});
+
 
 /* ── Shared brand colours for emails ── */
 const C = {
@@ -207,20 +202,21 @@ router.post('/', async (req, res) => {
     });
 
     /* Admin notification */
-    await transporter.sendMail({
-      from:    `"VELORA Website" <${process.env.EMAIL_USER}>`,
-      to:      process.env.ADMIN_EMAIL,
-      subject: `New Enquiry from ${name} — VELORA`,
-      html:    adminEmail({ name, email, brand, message, submittedAt })
-    });
+    /* Admin notification */
+await resend.emails.send({
+  from: "VELORA <onboarding@resend.dev>",
+  to: process.env.ADMIN_EMAIL,
+  subject: `New Enquiry from ${name} — VELORA`,
+  html: adminEmail({ name, email, brand, message, submittedAt })
+});
 
-    /* Auto-reply to user */
-    await transporter.sendMail({
-      from:    `"VELORA Digital" <${process.env.EMAIL_USER}>`,
-      to:      email,
-      subject: `We received your message, ${name.split(' ')[0]}`,
-      html:    autoReplyEmail({ name })
-    });
+/* Auto-reply to user */
+await resend.emails.send({
+  from: "VELORA <onboarding@resend.dev>",
+  to: email,
+  subject: `We received your message, ${name.split(' ')[0]}`,
+  html: autoReplyEmail({ name })
+});
 
     return res.status(200).json({
       success: true,
