@@ -1,3 +1,4 @@
+console.log("🔥 SERVER STARTING...");
 require('dotenv').config();
 const express  = require('express');
 const mongoose = require('mongoose');
@@ -9,7 +10,9 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 /* ── Middleware ── */
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,8 +32,16 @@ const contactLimiter = rateLimit({
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ── Routes ── */
-app.use('/api/contact', contactLimiter, require('./routes/contact'));
+//app.use('/api/contact', contactLimiter, require('./routes/contact'));
+console.log("🔥 Loading contact route...");
 
+try {
+  const contactRoute = require('./routes/contact');
+  app.use('/api/contact', contactLimiter, contactRoute);
+  console.log("✅ Contact route loaded");
+} catch (err) {
+  console.error("❌ Route load failed:", err);
+}
 /* ── Health check ── */
 app.get('/health', (_req, res) => {
   res.json({
@@ -47,12 +58,14 @@ app.get('*', (_req, res) => {
 });
 
 /* ── MongoDB connection ── */
+app.listen(PORT, () => {
+  console.log("Server running");
+});
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅  MongoDB connected');
-    app.listen(PORT, () => console.log(`🚀  Server running on port ${PORT}`));
   })
   .catch(err => {
-    console.error('❌  MongoDB connection failed:', err.message);
-    process.exit(1);
-  });
+  console.error('❌  MongoDB connection failed:', err.message);
+  app.listen(PORT, () => console.log(`🚀 Server running WITHOUT DB on port ${PORT}`));
+});
