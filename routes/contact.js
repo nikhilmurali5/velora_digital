@@ -155,78 +155,184 @@ function stepRow(num, title, desc) {
    ADMIN EMAIL
 ──────────────────────────────────────────── */
 function adminEmail({ name, email, brand, message, submittedAt }) {
-  const body = `
-    <div style="display:inline-block;background:rgba(168,145,212,0.15);
-                border:1px solid rgba(168,145,212,0.3);border-radius:20px;
-                padding:4px 14px;margin-bottom:24px;">
-      <p style="margin:0;font-size:11px;color:${C.lav};
-                letter-spacing:1px;text-transform:uppercase;">New Enquiry</p>
-    </div>
+  return `
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1333;padding:20px;font-family:Arial;">
+    <tr>
+      <td align="center">
 
-    <h2 style="margin:0 0 6px;font-size:20px;color:${C.white};">
-      You've got a new message
-    </h2>
-    <p style="margin:0 0 28px;font-size:14px;color:${C.muted};">
-      Submitted ${submittedAt}
-    </p>
+        <table width="500" cellpadding="0" cellspacing="0" style="background:#2b1d52;border-radius:10px;padding:20px;">
+          
+          <!-- HEADER -->
+          <tr>
+            <td align="center" style="padding-bottom:20px;">
+              <h1 style="color:#ffffff;letter-spacing:3px;margin:0;">VELORA</h1>
+              <p style="color:#aaa;margin:5px 0 0 0;">New Enquiry Notification</p>
+            </td>
+          </tr>
 
-    <div style="background:rgba(0,0,0,0.2);border-radius:12px;
-                padding:20px 24px;margin-bottom:28px;
-                border:1px solid rgba(168,145,212,0.1);">
-      ${detailRow('Name',    name)}
-      ${detailRow('Email',   `<a href="mailto:${email}"
-                                style="color:${C.lav};text-decoration:none;">${email}</a>`)}
-      ${detailRow('Brand',   brand   || `<em style="color:${C.muted};">Not provided</em>`)}
-      ${detailRow('Message', message || `<em style="color:${C.muted};">No message</em>`)}
-    </div>
+          <!-- BODY -->
+          <tr>
+            <td style="background:#3a2768;padding:20px;border-radius:8px;">
 
-    <table cellpadding="0" cellspacing="0">
-      <tr>
-        <td style="border-radius:8px;background:${C.lav};">
-          <a href="mailto:${email}"
-             style="display:inline-block;padding:12px 28px;font-size:14px;
-                    font-weight:600;color:${C.plum};text-decoration:none;">
-            Reply to ${name} →
-          </a>
-        </td>
-      </tr>
-    </table>`;
+              <p style="color:#aaa;font-size:12px;margin:0;">NEW ENQUIRY</p>
+              <h2 style="color:#ffffff;margin:10px 0;">You've got a new message</h2>
+              <p style="color:#aaa;font-size:12px;margin:0 0 15px 0;">Submitted ${submittedAt}</p>
 
-  return emailShell('New Enquiry Notification', body);
+              <hr style="border:0;border-top:1px solid #555;margin:15px 0;" />
+
+              <!-- NAME -->
+              <p style="color:#aaa;margin:0;">NAME</p>
+              <p style="color:#ffffff;font-size:16px;margin:5px 0 15px 0;">${name}</p>
+
+              <!-- EMAIL -->
+              <p style="color:#aaa;margin:0;">EMAIL</p>
+              <p style="color:#ffffff;font-size:16px;margin:5px 0 15px 0;word-break:break-all;">
+                ${email}
+              </p>
+
+              <!-- BRAND -->
+              <p style="color:#aaa;margin:0;">BRAND</p>
+              <p style="color:#ffffff;font-size:16px;margin:5px 0 15px 0;">${brand}</p>
+
+              <!-- MESSAGE -->
+              <p style="color:#aaa;margin:0;">MESSAGE</p>
+              <div style="background:#2b1d52;padding:12px;border-radius:6px;color:#ffffff;margin-top:5px;">
+                ${message}
+              </div>
+
+              <!-- BUTTON -->
+              <div style="text-align:center;margin-top:20px;">
+                <a href="mailto:${email}"
+                   style="background:#a891d4;color:#000000;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">
+                  Reply to ${name} →
+                </a>
+              </div>
+
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+  `;
 }
 
 /* ────────────────────────────────────────────
    AUTO-REPLY EMAIL
 ──────────────────────────────────────────── */
 function autoReplyEmail({ name }) {
-  const body = `
-    <h2 style="margin:0 0 8px;font-size:22px;color:${C.white};">
-      Thanks, ${name}! 🎉
-    </h2>
-    <p style="margin:0 0 28px;font-size:15px;color:${C.muted};line-height:1.6;">
-      We've received your enquiry and our team will review it shortly.
-      Here's what happens next:
-    </p>
+  return `
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1333;padding:20px;font-family:Arial;">
+    <tr>
+      <td align="center">
 
-    ${stepRow(1, 'We review your brief',
-                 'Our team reads every enquiry carefully — usually within a few hours.')}
-    ${stepRow(2, 'We reach out',
-                 "We'll reply to this email address within 1–2 business days.")}
-    ${stepRow(3, 'We get to work',
-                 'Once aligned, we kick off your project with a clear action plan.')}
+        <!-- MAIN CARD -->
+        <table width="500" cellpadding="0" cellspacing="0" style="background:#2b1d52;border-radius:10px;overflow:hidden;">
+          
+          <!-- HEADER -->
+          <tr>
+            <td align="center" style="padding:20px;">
+              <p style="color:#aaa;letter-spacing:3px;margin:0;">DIGITAL MARKETING AGENCY</p>
+              <h1 style="color:#ffffff;letter-spacing:6px;margin:5px 0;">VELORA</h1>
+            </td>
+          </tr>
 
-    <div style="height:1px;background:rgba(168,145,212,0.15);margin:28px 0;"></div>
+          <!-- THANK YOU SECTION -->
+          <tr>
+            <td style="background:#3a2768;padding:30px;text-align:center;">
+              
+              <div style="font-size:24px;color:#ffffff;margin-bottom:10px;">✦</div>
 
-    <p style="margin:0;font-size:13px;color:${C.muted};line-height:1.6;">
-      In the meantime, feel free to reply to this email if you have anything
-      to add. We look forward to working with you.
-    </p>
+              <h2 style="color:#ffffff;margin:10px 0;font-size:28px;">
+                Thank you, <i>${name}</i>.
+              </h2>
 
-    <p style="margin:24px 0 0;font-size:14px;color:${C.lavLt};font-weight:600;">
-      — The Velora Team
-    </p>`;
+              <p style="color:#cfc6e6;font-size:16px;line-height:1.6;">
+                We've received your message and our team will get back to you 
+                within <b>24–48 hours</b>.
+              </p>
 
-  return emailShell('We received your message', body);
+            </td>
+          </tr>
+
+          <!-- DIVIDER -->
+          <tr>
+            <td style="border-top:1px solid rgba(255,255,255,0.1);"></td>
+          </tr>
+
+          <!-- WHAT HAPPENS NEXT -->
+          <tr>
+            <td style="padding:30px;">
+              
+              <p style="color:#aaa;letter-spacing:3px;font-size:12px;">WHAT HAPPENS NEXT</p>
+
+              <!-- STEP 1 -->
+              <table width="100%" style="margin-top:20px;">
+                <tr>
+                  <td width="40" style="color:#a891d4;font-size:18px;">01</td>
+                  <td>
+                    <p style="color:#ffffff;margin:0;font-size:16px;"><b>We review your brief</b></p>
+                    <p style="color:#cfc6e6;margin:5px 0 15px 0;font-size:14px;">
+                      Our strategists study your brand, goals, and the details you shared.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- STEP 2 -->
+              <table width="100%">
+                <tr>
+                  <td width="40" style="color:#a891d4;font-size:18px;">02</td>
+                  <td>
+                    <p style="color:#ffffff;margin:0;font-size:16px;"><b>We craft a proposal</b></p>
+                    <p style="color:#cfc6e6;margin:5px 0 15px 0;font-size:14px;">
+                      Tailored services and a growth plan built specifically for your brand.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- STEP 3 -->
+              <table width="100%">
+                <tr>
+                  <td width="40" style="color:#a891d4;font-size:18px;">03</td>
+                  <td>
+                    <p style="color:#ffffff;margin:0;font-size:16px;"><b>We connect</b></p>
+                    <p style="color:#cfc6e6;margin:5px 0 20px 0;font-size:14px;">
+                      A call or email to walk you through the strategy and answer every question.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- BUTTON -->
+              <div style="text-align:center;margin-top:10px;">
+                <a href="mailto:veloradigital07@gmail.com"
+                   style="border:1px solid #a891d4;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">
+                  QUESTIONS? EMAIL US
+                </a>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#1a1333;text-align:center;padding:20px;border-top:1px solid rgba(255,255,255,0.1);">
+              <h3 style="color:#ffffff;margin:0;">VELORA</h3>
+              <p style="color:#cfc6e6;margin:5px 0;">Elevating Brands Digitally</p>
+              <p style="color:#aaa;margin:0;">veloradigital07@gmail.com</p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+  `;
 }
 
 /* ── Sanitiser ── */
