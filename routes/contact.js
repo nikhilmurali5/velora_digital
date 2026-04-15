@@ -1,38 +1,8 @@
-const express    = require('express');
-const nodemailer = require('nodemailer');
-const Contact    = require('../models/Contact');
+const express = require('express');
+const https   = require('https');
+const Contact = require('../models/Contact');
 
-const router = express.Router();
-
-/* ────────────────────────────────────────────
-   TRANSPORTER  — module-level singleton
-   pool:true  → reuses SMTP connection across emails
-   so no repeated TLS handshakes in production
-──────────────────────────────────────────── */
-const transporter = nodemailer.createTransport({
-  host:   'smtp-relay.brevo.com',
-  port:   465,
-  secure: true,          // STARTTLS on 587
-  pool:   true,           // connection pooling ✅
-  maxConnections: 5,
-  maxMessages:    100,
-  auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASS
-  },
-  tls: {
-    rejectUnauthorized: true  // enforce cert validation in prod
-  }
-});
-
-/* verify transporter once at startup — logs clearly if creds are wrong */
-transporter.verify((err) => {
-  if (err) {
-    console.error('❌ [SMTP] Transporter verify failed:', err.message);
-  } else {
-    console.log('✅ [SMTP] Transporter ready');
-  }
-});
+const router  = express.Router();
 
 /* ── Brand colours ── */
 const C = {
@@ -43,6 +13,49 @@ const C = {
   white:  '#FAFAF8',
   muted:  '#9e94b4'
 };
+
+/* ────────────────────────────────────────────
+   BREVO HTTP API SENDER
+   Uses port 443 — works on Render free tier
+   No nodemailer, no SMTP, no port blocks
+──────────────────────────────────────────── */
+async function sendEmail(label, payload) {
+  return new Promise((resolve) => {
+    const body    = JSON.stringify(payload);
+    const options = {
+      hostname: 'api.brevo.com',
+      path:     '/v3/smtp/email',
+      method:   'POST',
+      headers: {
+        'Content-Type':   'application/json',
+        'api-key':         process.env.BREVO_API_KEY,
+        'Content-Length':  Buffer.byteLength(body)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log(`✅ [${label}] Sent — status: ${res.statusCode}`);
+          resolve(true);
+        } else {
+          console.error(`❌ [${label}] Failed — status: ${res.statusCode} body: ${data}`);
+          resolve(false);
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      console.error(`❌ [${label}] Request error — ${err.message}`);
+      resolve(false);
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
 
 /* ── Reusable HTML shell ── */
 function emailShell(title, bodyHtml) {
@@ -106,7 +119,7 @@ function detailRow(label, value) {
   return `
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:4px;">
     <tr>
-      <td width="120" style="padding:10px 0 10px 0;vertical-align:top;">
+      <td width="120" style="padding:10px 0;vertical-align:top;">
         <p style="margin:0;font-size:11px;color:${C.muted};
                   text-transform:uppercase;letter-spacing:0.5px;">${label}</p>
       </td>
@@ -129,7 +142,7 @@ function stepRow(num, title, desc) {
           <span style="font-size:13px;font-weight:700;color:${C.lav};">${num}</span>
         </div>
       </td>
-      <td style="vertical-align:top;">
+      <td style="vertical-align:top;padding-left:8px;">
         <p style="margin:0 0 4px;font-size:14px;font-weight:600;
                   color:${C.white};">${title}</p>
         <p style="margin:0;font-size:13px;color:${C.muted};">${desc}</p>
@@ -139,11 +152,10 @@ function stepRow(num, title, desc) {
 }
 
 /* ────────────────────────────────────────────
-   ADMIN EMAIL  — full enquiry details
+   ADMIN EMAIL
 ──────────────────────────────────────────── */
 function adminEmail({ name, email, brand, message, submittedAt }) {
   const body = `
-    <!-- Alert pill -->
     <div style="display:inline-block;background:rgba(168,145,212,0.15);
                 border:1px solid rgba(168,145,212,0.3);border-radius:20px;
                 padding:4px 14px;margin-bottom:24px;">
@@ -158,19 +170,17 @@ function adminEmail({ name, email, brand, message, submittedAt }) {
       Submitted ${submittedAt}
     </p>
 
-    <!-- Details card -->
     <div style="background:rgba(0,0,0,0.2);border-radius:12px;
                 padding:20px 24px;margin-bottom:28px;
                 border:1px solid rgba(168,145,212,0.1);">
       ${detailRow('Name',    name)}
       ${detailRow('Email',   `<a href="mailto:${email}"
                                 style="color:${C.lav};text-decoration:none;">${email}</a>`)}
-      ${detailRow('Brand',   brand   || '<em style="color:${C.muted};">Not provided</em>')}
-      ${detailRow('Message', message || '<em style="color:${C.muted};">No message</em>')}
+      ${detailRow('Brand',   brand   || `<em style="color:${C.muted};">Not provided</em>`)}
+      ${detailRow('Message', message || `<em style="color:${C.muted};">No message</em>`)}
     </div>
 
-    <!-- CTA -->
-    <table cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+    <table cellpadding="0" cellspacing="0">
       <tr>
         <td style="border-radius:8px;background:${C.lav};">
           <a href="mailto:${email}"
@@ -186,7 +196,7 @@ function adminEmail({ name, email, brand, message, submittedAt }) {
 }
 
 /* ────────────────────────────────────────────
-   AUTO-REPLY EMAIL  — sent to the user
+   AUTO-REPLY EMAIL
 ──────────────────────────────────────────── */
 function autoReplyEmail({ name }) {
   const body = `
@@ -201,11 +211,10 @@ function autoReplyEmail({ name }) {
     ${stepRow(1, 'We review your brief',
                  'Our team reads every enquiry carefully — usually within a few hours.')}
     ${stepRow(2, 'We reach out',
-                 'We\'ll reply to this email address within 1–2 business days.')}
+                 "We'll reply to this email address within 1–2 business days.")}
     ${stepRow(3, 'We get to work',
                  'Once aligned, we kick off your project with a clear action plan.')}
 
-    <!-- Divider -->
     <div style="height:1px;background:rgba(168,145,212,0.15);margin:28px 0;"></div>
 
     <p style="margin:0;font-size:13px;color:${C.muted};line-height:1.6;">
@@ -225,21 +234,7 @@ function sanitise(str) {
   return String(str || '').replace(/<[^>]*>/g, '').trim();
 }
 
-/* ────────────────────────────────────────────
-   SEND HELPER  — never throws, always logs
-──────────────────────────────────────────── */
-async function sendEmail(label, payload) {
-  try {
-    const info = await transporter.sendMail(payload);
-    console.log(`✅ [${label}] Sent — messageId: ${info.messageId}`);
-    return true;
-  } catch (err) {
-    console.error(`❌ [${label}] Failed — ${err.message}`);
-    return false;
-  }
-}
-
-/* ── Input validation ── */
+/* ── Email validator ── */
 function isValidEmail(str) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
 }
@@ -248,7 +243,8 @@ function isValidEmail(str) {
    ROUTE  POST /api/contact
 ──────────────────────────────────────────── */
 router.post('/', async (req, res) => {
-  /* 1 ── Sanitise & validate */
+
+  /* 1 — Sanitise & validate */
   const name    = sanitise(req.body.name);
   const email   = sanitise(req.body.email);
   const brand   = sanitise(req.body.brand);
@@ -268,35 +264,37 @@ router.post('/', async (req, res) => {
     });
   }
 
-  /* 2 ── Save to DB */
+  /* 2 — Save to DB */
   let submittedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
   try {
     const contact = await Contact.create({ name, email, brand, message });
     submittedAt   = new Date(contact.createdAt)
                       .toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
   } catch (dbErr) {
-    /* DB failure is logged but must NOT block the email response */
     console.error('❌ [DB] Save failed:', dbErr.message);
   }
 
-  /* 3 ── Respond to frontend IMMEDIATELY */
+  /* 3 — Respond to frontend IMMEDIATELY */
   res.json({ success: true });
 
-  /* 4 ── Fire both emails in the background (after response is sent) */
-  const FROM = `"VELORA" <${process.env.BREVO_USER}>`;
+  /* 4 — Fire both emails in background after response */
+  const FROM = {
+    name:  'VELORA',
+    email: process.env.BREVO_SENDER_EMAIL
+  };
 
   Promise.allSettled([
     sendEmail('ADMIN', {
-      from:    FROM,
-      to:      'veloradigital07@gmail.com',
-      subject: `✉️ New Enquiry from ${name}`,
-      html:    adminEmail({ name, email, brand, message, submittedAt })
+      sender:      FROM,
+      to:          [{ email: 'veloradigital07@gmail.com', name: 'Velora Admin' }],
+      subject:     `✉️ New Enquiry from ${name}`,
+      htmlContent: adminEmail({ name, email, brand, message, submittedAt })
     }),
     sendEmail('USER', {
-      from:    FROM,
-      to:      email,
-      subject: `We received your message — Velora`,
-      html:    autoReplyEmail({ name })
+      sender:      FROM,
+      to:          [{ email, name }],
+      subject:     `We received your message — Velora`,
+      htmlContent: autoReplyEmail({ name })
     })
   ]).then(results => {
     const [admin, user] = results;
@@ -305,6 +303,7 @@ router.post('/', async (req, res) => {
     if (user.status  === 'rejected')
       console.error('❌ [USER]  Promise rejected:', user.reason);
   });
+
 });
 
 module.exports = router;
