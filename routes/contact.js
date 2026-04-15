@@ -223,7 +223,8 @@ function adminEmail({ name, email, brand, message, submittedAt }) {
    AUTO-REPLY EMAIL
 ──────────────────────────────────────────── */
 function autoReplyEmail({ name }) {
-  const firstName = name.split(' ')[0];
+  const firstName = (name || 'there').split(' ')[0]; // ✅ FIXED
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>We got your message – VELORA</title></head>
@@ -243,7 +244,7 @@ function autoReplyEmail({ name }) {
             <h2 style="margin:0 0 14px;font-size:28px;font-weight:300;color:${C.white};font-family:Georgia,serif;">
               Thank you, <em style="font-style:italic;color:${C.lavLt};">${firstName}</em>.
             </h2>
-            <p style="margin:0;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);max-width:400px;display:inline-block;">
+            <p style="margin:0;font-size:15px;line-height:1.8;color:rgba(255,255,255,0.65);max-width:400px;display:inline-block;width:100%;"> <!-- ✅ FIXED -->
               We've received your message and our team will get back to you within
               <strong style="color:${C.lavLt};">24–48 hours</strong>.
             </p>
