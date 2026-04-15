@@ -11,8 +11,8 @@ const router = express.Router();
 ──────────────────────────────────────────── */
 const transporter = nodemailer.createTransport({
   host:   'smtp-relay.brevo.com',
-  port:   587,
-  secure: false,          // STARTTLS on 587
+  port:   465,
+  secure: true,          // STARTTLS on 587
   pool:   true,           // connection pooling ✅
   maxConnections: 5,
   maxMessages:    100,
